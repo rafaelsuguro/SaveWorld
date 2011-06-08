@@ -140,7 +140,7 @@ void buscaGulosa()
             contResultado++;
             vetorEstacoes[contEstacoes].flag = 1;
         }
-        for(contPontos = 0; contPontos < nPontos; clsontPontos++)
+        for(contPontos = 0; contPontos < nPontos; contPontos++)
         {
             if(vetorResultado.vetorPontosCobertos[contPontos] == 0)
             {
