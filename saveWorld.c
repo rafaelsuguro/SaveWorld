@@ -8,6 +8,7 @@ typedef struct Estacao
     float custoEstacao;
     int *vPontosEstacao;
     int nPontosEstacao;
+    int flag;
 }Estacao;
 
 typedef struct Resultado
@@ -101,6 +102,7 @@ void leDados()
             contPontos++;
         } while(flag != '\n');
         vetorEstacoes[contEstacoes].nPontosEstacao = contPontos;
+        vetorEstacoes[contEstacoes].flag = 0;
     }
 }
 
@@ -136,8 +138,9 @@ void buscaGulosa()
                 vetorResultado.vetorPontosCobertos[vetorEstacoes[contEstacoes].vPontosEstacao[contPontosEstacao] - 1]++;
             }
             contResultado++;
+            vetorEstacoes[contEstacoes].flag = 1;
         }
-        for(contPontos = 0; contPontos < nPontos; contPontos++)
+        for(contPontos = 0; contPontos < nPontos; clsontPontos++)
         {
             if(vetorResultado.vetorPontosCobertos[contPontos] == 0)
             {
