@@ -100,7 +100,7 @@ void leDados()
         do
         {
             scanf("%d%c%c", &lido,&flag,&flag);
-            // Voltando no stdin, esse eh um metodo de capturar o \n sem avancar o ponteiro do stdin sem necessidade
+            /* Voltando no stdin, esse eh um metodo de capturar o \n sem avancar o ponteiro do stdin sem necessidade */
             fseek(stdin, -1, SEEK_CUR);
             fflush(stdin);
             vetorEstacoes[contEstacoes].vPontosEstacao[contPontos] = lido;
@@ -163,7 +163,7 @@ void buscaGulosa()
 void removeEstacao(int i) {
 	int nextIndex = i + 1;
     int custoEstacaoRemovida = vetorResultado.vetorEstacoesResultado[i].custoEstacao;
-	// Se tiver out of bounds
+	/* Se tiver out of bounds */
 	while (nextIndex < vetorResultado.nEstacoesResultado)
 	{
 		vetorResultado.vetorEstacoesResultado[i] = vetorResultado.vetorEstacoesResultado[nextIndex];
@@ -177,27 +177,27 @@ void removeEstacao(int i) {
 void buscaLocal() {
 	Estacao e;
 	int i, j;
-	// Vamos procurar estacoes que tem todos os pontos com multiplicidade maior que 1
-	// Ou seja, essa estacao esta so adicionando custo porque os pontos ja foram cobertos
-	// Detalhe que se houverem mais de 1 estacao nessa situacao a escolha vai ser gulosa
-	// e deterministica, ja que estamos correndo o vetor em ordem crescente
+	/* Vamos procurar estacoes que tem todos os pontos com multiplicidade maior que 1
+	/  Ou seja, essa estacao esta so adicionando custo porque os pontos ja foram cobertos
+	/  Detalhe que se houverem mais de 1 estacao nessa situacao a escolha vai ser gulosa
+	/  e deterministica, ja que estamos correndo o vetor em ordem crescente */
 	for(i = 0; i < vetorResultado.nEstacoesResultado; i++)
 	{
 		e = vetorResultado.vetorEstacoesResultado[i];
 		for(j = 0; j < e.nPontosEstacao; j++)
 		{
 			int pontoASerRemovido = e.vPontosEstacao[j];
-			// Caso algum ponto seja exclusivamente coberto por esta estacao, ela nao pode ser removida
+			/* Caso algum ponto seja exclusivamente coberto por esta estacao, ela nao pode ser removida */
 			if (vetorResultado.vetorPontosCobertos[pontoASerRemovido - 1]  <= 1)
 			{
 				break;
 			}
 		}
-		// Se for true eh porque todos os pontos tem multiplicidade maior que 1
+		/* Se for true eh porque todos os pontos tem multiplicidade maior que 1 */
 		if ( e.nPontosEstacao == j )
 		{
 			removeEstacao(i);
-			// Como removemos uma estacao, voltamos um passo no contador do for()
+			/* Como removemos uma estacao, voltamos um passo no contador do for() */
 			i--;
 		}
 	}
@@ -224,22 +224,22 @@ void timer_handler (int signum)
 
 int main(int argc, char *argv[])
 {
-    // Structs para uso do timer
+    /* Structs para uso do timer */
     struct sigaction sa;
     struct itimerval timer;
     
-    // Instalando o timer_handler como o signal handler para o sinal SIGALRM
+    /* Instalando o timer_handler como o signal handler para o sinal SIGALRM */
     memset (&sa, 0, sizeof (sa));
     sa.sa_handler = &timer_handler;
     sigaction (SIGALRM, &sa, NULL);
     
-    // Configurando o timer expirar em 58 segundos, dando 2 segundos pro imprimeResultado funcionar
-    timer.it_value.tv_sec = 5; // Temporario em 5 segundos, mudar para 58
+    /* Configurando o timer expirar em 58 segundos, dando 2 segundos pro imprimeResultado funcionar */
+    timer.it_value.tv_sec = 5; /* Temporario em 5 segundos, mudar para 58 */
     timer.it_value.tv_usec = 0;
     timer.it_interval.tv_sec = 0;
     timer.it_interval.tv_usec = 0;
     
-    // Iniciando o timer, estamos usando tempo Real
+    /* Iniciando o timer, estamos usando tempo Real */
     setitimer (ITIMER_REAL, &timer, NULL);
     
     while (1) {
