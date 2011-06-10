@@ -1,6 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <signal.h>
+#include <string.h>
+#include <sys/time.h>
+
+
 
 typedef struct Estacao 
 {
@@ -211,15 +216,38 @@ void imprimeResultado()
     }
 }
 
+void timer_handler (int signum)
+{
+    imprimeResultado();
+	exit(0);
+}
 
 int main(int argc, char *argv[])
 {
-    freopen("teste", "r", stdin);
-    leDados();
-    quickSort(vetorEstacoes, 0, nEstacoes - 1);
-    buscaGulosa();
-    buscaLocal();
-    imprimeResultado();
+    // Structs para uso do timer
+    struct sigaction sa;
+    struct itimerval timer;
     
+    // Instalando o timer_handler como o signal handler para o sinal SIGALRM
+    memset (&sa, 0, sizeof (sa));
+    sa.sa_handler = &timer_handler;
+    sigaction (SIGALRM, &sa, NULL);
+    
+    // Configurando o timer expirar em 58 segundos, dando 2 segundos pro imprimeResultado funcionar
+    timer.it_value.tv_sec = 5; // Temporario em 5 segundos, mudar para 58
+    timer.it_value.tv_usec = 0;
+    timer.it_interval.tv_sec = 0;
+    timer.it_interval.tv_usec = 0;
+    
+    // Iniciando o timer, estamos usando tempo Real
+    setitimer (ITIMER_REAL, &timer, NULL);
+    
+    while (1) {
+        freopen("teste", "r", stdin);
+        leDados();
+        quickSort(vetorEstacoes, 0, nEstacoes - 1);
+        buscaGulosa();
+        buscaLocal();
+    }    
     return 0;
 }
