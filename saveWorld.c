@@ -33,16 +33,16 @@ void swap(Estacao* a, Estacao* b) {
     *b = tmp;
 }
 
- 
+
 int partition(Estacao vec[], int left, int right) 
 {
     
     int i, j;
-       
+    
     i = left;
     for (j = left + 1; j <= right; ++j) {
         if ((vec[j].custoEstacao/(float)(vec[j].nPontosEstacao)) < (vec[left].custoEstacao/(float)(vec[left].nPontosEstacao))) {
-    
+            
             ++i;
             swap(&vec[i], &vec[j]);
         }
@@ -56,17 +56,17 @@ int partition(Estacao vec[], int left, int right)
         }
     }
     swap(&vec[left], &vec[i]);
-             
+    
     return i;
 }
 
- 
+
 void quickSort(Estacao vec[], int left, int right) {
     
     int r;
-       
-    if (right > left) {
     
+    if (right > left) {
+        
         r = partition(vec, left, right);
         quickSort(vec, left, r - 1);
         quickSort(vec, r + 1, right);
@@ -77,15 +77,16 @@ void quickSort(Estacao vec[], int left, int right) {
 void leDados()
 {
     char flag;
+    int lido;
     int contEstacoes, contPontos = 0;
-
+    
     scanf("%c %d\n", &flag, &nPontos);
     fflush(stdin);
     scanf("%c %d\n", &flag, &nEstacoes);
     fflush(stdin);
-
+    
     vetorEstacoes = (Estacao*)malloc(sizeof(Estacao)*nEstacoes);
-
+    
     for(contEstacoes = 0; contEstacoes < nEstacoes; contEstacoes++)
     {
         vetorEstacoes[contEstacoes].vPontosEstacao = (int*)malloc(sizeof(int)*nPontos);
@@ -93,12 +94,11 @@ void leDados()
         contPontos = 0;
         do
         {
-            scanf("%c", &flag);
+            scanf("%d%c%c", &lido,&flag,&flag);
+            // Voltando no stdin, esse eh um metodo de capturar o \n sem avancar o ponteiro do stdin sem necessidade
+            fseek(stdin, -1, SEEK_CUR);
             fflush(stdin);
-            if(flag != ' ' && flag != '\n')
-            {
-                vetorEstacoes[contEstacoes].vPontosEstacao[contPontos] = (int)flag;
-            }
+            vetorEstacoes[contEstacoes].vPontosEstacao[contPontos] = lido;
             contPontos++;
         } while(flag != '\n');
         vetorEstacoes[contEstacoes].nPontosEstacao = contPontos;
@@ -110,7 +110,7 @@ void leDados()
 void buscaGulosa()
 {
     int contEstacoes, contPontos, contPontosEstacao, contResultado = 0;
-
+    
     vetorResultado.custo = 0;
     vetorResultado.vetorEstacoesResultado = (Estacao*)malloc(sizeof(Estacao)*nEstacoes);
     vetorResultado.vetorPontosCobertos = (int*)malloc(sizeof(int)*nPontos);
@@ -155,6 +155,48 @@ void buscaGulosa()
     vetorResultado.nEstacoesResultado = contResultado;
 }
 
+void removeEstacao(int i) {
+	int nextIndex = i + 1;
+    int custoEstacaoRemovida = vetorResultado.vetorEstacoesResultado[i].custoEstacao;
+	// Se tiver out of bounds
+	while (nextIndex < vetorResultado.nEstacoesResultado)
+	{
+		vetorResultado.vetorEstacoesResultado[i] = vetorResultado.vetorEstacoesResultado[nextIndex];
+		i++;
+		nextIndex++;
+	}
+    vetorResultado.custo = vetorResultado.custo - custoEstacaoRemovida;
+	vetorResultado.nEstacoesResultado--;
+}
+
+void buscaLocal() {
+	Estacao e;
+	int i, j;
+	// Vamos procurar estacoes que tem todos os pontos com multiplicidade maior que 1
+	// Ou seja, essa estacao esta so adicionando custo porque os pontos ja foram cobertos
+	// Detalhe que se houverem mais de 1 estacao nessa situacao a escolha vai ser gulosa
+	// e deterministica, ja que estamos correndo o vetor em ordem crescente
+	for(i = 0; i < vetorResultado.nEstacoesResultado; i++)
+	{
+		e = vetorResultado.vetorEstacoesResultado[i];
+		for(j = 0; j < e.nPontosEstacao; j++)
+		{
+			int pontoASerRemovido = e.vPontosEstacao[j];
+			// Caso algum ponto seja exclusivamente coberto por esta estacao, ela nao pode ser removida
+			if (vetorResultado.vetorPontosCobertos[pontoASerRemovido - 1]  <= 1)
+			{
+				break;
+			}
+		}
+		// Se for true eh porque todos os pontos tem multiplicidade maior que 1
+		if ( e.nPontosEstacao == j )
+		{
+			removeEstacao(i);
+			// Como removemos uma estacao, voltamos um passo no contador do for()
+			i--;
+		}
+	}
+}
 
 void imprimeResultado()
 {
@@ -165,16 +207,19 @@ void imprimeResultado()
     for(contEstacoesResultado = 0; contEstacoesResultado < vetorResultado.nEstacoesResultado; contEstacoesResultado++)
     {
         printf("%s\n", vetorResultado.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao);
+        printf("%d\n", vetorResultado.vetorEstacoesResultado[contEstacoesResultado].nPontosEstacao);
     }
 }
 
 
 int main(int argc, char *argv[])
 {
+    freopen("teste", "r", stdin);
     leDados();
     quickSort(vetorEstacoes, 0, nEstacoes - 1);
     buscaGulosa();
+    buscaLocal();
     imprimeResultado();
-
+    
     return 0;
 }
