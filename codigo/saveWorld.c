@@ -203,6 +203,10 @@ void buscaGulosa()
         {
             break;
         }
+        if(contPontos != nPontos && contEstacoes == RCL - 1)
+        {
+            RCL = RCL + 1;
+        }
     }
     vetorResultado.nEstacoesResultado = contResultado;
 }
@@ -298,13 +302,13 @@ int main(int argc, char *argv[])
     setitimer (ITIMER_REAL, &timer, NULL);
     
     vetorResultadoFinal.custo = -1;
-    
+
+    freopen(argv[1], "r", stdin);
+    leDados();    
     while (1) {
-        freopen("teste", "r", stdin);
-        leDados();
         quickSort(vetorEstacoes, 0, nEstacoes - 1);
         buscaGulosa();
-        buscaLocal();
+        //buscaLocal();
         comparaResultado();
     }    
     return 0;
