@@ -25,7 +25,7 @@ typedef struct Resultado
 }Resultado;
 
 Estacao *vetorEstacoes;
-Resultado vetorResultado;
+Resultado vetorResultado, vetorResultadoFinal;
 int nPontos, nEstacoes;
 
 
@@ -124,7 +124,7 @@ int calcula_RCL() {
     if(cmax == cmin) {
         alpha = 0.5; //porcentagem utilizada do vetor
         cmax = vetorEstacoes[0].custoEstacao;
-        cmin = vetorEstacoes[m - 1].custoEstacao;
+        cmin = vetorEstacoes[nEstacoes - 1].custoEstacao;
         max = cmax + (alpha * (cmin - cmax));
         i = 0;
         while(vetorEstacoes[i].custoEstacao < max) {
@@ -134,7 +134,7 @@ int calcula_RCL() {
     else if(cmax != cmin) {
         max = cmax + (alpha * (cmin - cmax));
         i = 0;
-        while(vetorEstacoes[i].custoEstacao/vetorEstacoes[i].nEstacoes < max) {
+        while(vetorEstacoes[i].custoEstacao/vetorEstacoes[i].nPontosEstacao < max) {
             i++;
         }
     }
@@ -144,7 +144,13 @@ int calcula_RCL() {
 void buscaGulosa()
 {
     int contEstacoes, contPontos, contPontosEstacao, contResultado = 0;
+    int RCL = calcula_RCL();
+    struct timeval random;
+    int r_RCL;
     
+    gettimeofday(&random,NULL);
+    r_RCL = random.tv_usec % RCL; //sorteia estacão da RCL
+        
     vetorResultado.custo = 0;
     vetorResultado.vetorEstacoesResultado = (Estacao*)malloc(sizeof(Estacao)*nEstacoes);
     vetorResultado.vetorPontosCobertos = (int*)malloc(sizeof(int)*nPontos);
@@ -154,7 +160,19 @@ void buscaGulosa()
         vetorResultado.vetorPontosCobertos[contPontos] = 0;
     }
     
-    for(contEstacoes = 0; contEstacoes < nEstacoes; contEstacoes++)
+    gettimeofday(&random,NULL);
+    r_RCL = random.tv_usec % RCL; //sorteia estacão da RCL
+    
+    vetorResultado.vetorEstacoesResultado[contResultado] = vetorEstacoes[r_RCL];
+    vetorResultado.custo += vetorEstacoes[r_RCL].custoEstacao;
+    for(contPontosEstacao = 0; contPontosEstacao < vetorEstacoes[r_RCL].nPontosEstacao; contPontosEstacao++)
+    {
+        vetorResultado.vetorPontosCobertos[vetorEstacoes[r_RCL].vPontosEstacao[contPontosEstacao] - 1]++;
+    }
+    contResultado++;
+    vetorEstacoes[r_RCL].flag = 1;
+    
+    for(contEstacoes = 0; contEstacoes < RCL; contEstacoes++)
     {
         for(contPontosEstacao = 0; contPontosEstacao < vetorEstacoes[contEstacoes].nPontosEstacao; contPontosEstacao++)
         {
@@ -232,16 +250,24 @@ void buscaLocal() {
 	}
 }
 
+void comparaResultado()
+{
+    if(vetorResultadoFinal.custo > vetorResultado.custo || vetorResultadoFinal.custo == -1)
+    {
+        vetorResultadoFinal = vetorResultado;
+    }
+}
+
 void imprimeResultado()
 {
     int contEstacoesResultado;
     
-    printf("Custo: %.2f\n", vetorResultado.custo);
-    printf("Total: %d\n", vetorResultado.nEstacoesResultado);
-    for(contEstacoesResultado = 0; contEstacoesResultado < vetorResultado.nEstacoesResultado; contEstacoesResultado++)
+    printf("Custo: %.2f\n", vetorResultadoFinal.custo);
+    printf("Total: %d\n", vetorResultadoFinal.nEstacoesResultado);
+    for(contEstacoesResultado = 0; contEstacoesResultado < vetorResultadoFinal.nEstacoesResultado; contEstacoesResultado++)
     {
-        printf("%s\n", vetorResultado.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao);
-        printf("%d\n", vetorResultado.vetorEstacoesResultado[contEstacoesResultado].nPontosEstacao);
+        printf("%s\n", vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao);
+        printf("%d\n", vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nPontosEstacao);
     }
 }
 
@@ -271,12 +297,15 @@ int main(int argc, char *argv[])
     /* Iniciando o timer, estamos usando tempo Real */
     setitimer (ITIMER_REAL, &timer, NULL);
     
+    vetorResultadoFinal.custo = -1;
+    
     while (1) {
         freopen("teste", "r", stdin);
         leDados();
         quickSort(vetorEstacoes, 0, nEstacoes - 1);
         buscaGulosa();
         buscaLocal();
+        comparaResultado();
     }    
     return 0;
 }
