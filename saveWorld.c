@@ -111,6 +111,35 @@ void leDados()
     }
 }
 
+//calcula a RCL do algoritmo semi-guloso
+int calcula_RCL() {
+    int i;
+    float cmin,cmax,max,alpha;
+
+    alpha = 0.5; //porcentagem utilizada do vetor
+    cmax = vetorEstacoes[0].custoEstacao/vetorEstacoes[0].nPontosEstacao;
+    cmin = vetorEstacoes[nEstacoes - 1].custoEstacao/vetorEstacoes[nEstacoes - 1].nPontosEstacao;
+    //verifica se todos os compradores possuem a mesma relação da ordenação, no
+    //caso, oferta dividido pelo número de itens para cada comprador
+    if(cmax == cmin) {
+        alpha = 0.5; //porcentagem utilizada do vetor
+        cmax = vetorEstacoes[0].custoEstacao;
+        cmin = vetorEstacoes[m - 1].custoEstacao;
+        max = cmax + (alpha * (cmin - cmax));
+        i = 0;
+        while(vetorEstacoes[i].custoEstacao < max) {
+            i++;
+        }
+    }
+    else if(cmax != cmin) {
+        max = cmax + (alpha * (cmin - cmax));
+        i = 0;
+        while(vetorEstacoes[i].custoEstacao/vetorEstacoes[i].nEstacoes < max) {
+            i++;
+        }
+    }
+    return i;
+}
 
 void buscaGulosa()
 {
