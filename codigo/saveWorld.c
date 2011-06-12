@@ -203,7 +203,7 @@ void buscaGulosa()
         {
             break;
         }
-        if(contPontos != nPontos && contEstacoes == RCL - 1)
+        if(contPontos != nPontos && contEstacoes == RCL - 1 && RCL < nEstacoes)
         {
             RCL = RCL + 1;
         }
@@ -308,7 +308,7 @@ int main(int argc, char *argv[])
     while (1) {
         quickSort(vetorEstacoes, 0, nEstacoes - 1);
         buscaGulosa();
-        //buscaLocal();
+        buscaLocal();
         comparaResultado();
     }    
     return 0;
