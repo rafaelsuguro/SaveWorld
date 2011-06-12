@@ -47,7 +47,7 @@ void leDados()
         contPontos = 0;
         do
         {
-            scanf("%d%c%c", &lido,&flag,&flag);
+            scanf("%d%c%c", &lido,&flag,&flag); /* Armazena pontos cobertos pela estacão */
             /* Voltando no stdin, esse eh um metodo de capturar o \n sem avancar o ponteiro do stdin sem necessidade */
             fseek(stdin, -1, SEEK_CUR);
             fflush(stdin);
@@ -58,28 +58,28 @@ void leDados()
     }
 }
 
-//calcula a RCL do algoritmo semi-guloso
+/* Calcula a RCL do algoritmo guloso aleatório */
 int calcula_RCL() {
     int i;
     float cmin,cmax,max,alpha;
 
-    alpha = 0.5; //porcentagem utilizada do vetor
-    cmax = vetorEstacoes[0].custoEstacao/vetorEstacoes[0].nPontosEstacao;
-    cmin = vetorEstacoes[nEstacoes - 1].custoEstacao/vetorEstacoes[nEstacoes - 1].nPontosEstacao;
-    //verifica se todos os compradores possuem a mesma relação da ordenação, no
-    //caso, oferta dividido pelo número de itens para cada comprador
+    alpha = 0.5; /* porcentagem utilizada do vetor */
+    cmin = vetorEstacoes[0].custoEstacao/vetorEstacoes[0].nPontosEstacao;
+    cmax = vetorEstacoes[nEstacoes - 1].custoEstacao/vetorEstacoes[nEstacoes - 1].nPontosEstacao;
+    /* Verifica se todos as estacões possuem a mesma relação da ordenação, no
+       caso, custo da estacão dividido pelo número de pontos cobertos pela estacão */
     if(cmax == cmin) {
-        alpha = 0.5; //porcentagem utilizada do vetor
-        cmax = vetorEstacoes[0].custoEstacao;
-        cmin = vetorEstacoes[nEstacoes - 1].custoEstacao;
-        max = cmax + (alpha * (cmin - cmax));
+        alpha = 0.5; /* porcentagem utilizada do vetor */
+        cmin = vetorEstacoes[0].custoEstacao;
+        cmax = vetorEstacoes[nEstacoes - 1].custoEstacao;
+        max = cmin + (alpha * (cmax - cmin));
         i = 0;
         while(vetorEstacoes[i].custoEstacao < max) {
             i++;
         }
     }
     else if(cmax != cmin) {
-        max = cmax + (alpha * (cmin - cmax));
+        max = cmin + (alpha * (cmax - cmin));
         i = 0;
         while(vetorEstacoes[i].custoEstacao/vetorEstacoes[i].nPontosEstacao < max) {
             i++;
@@ -88,16 +88,18 @@ int calcula_RCL() {
     return i;
 }
 
+
+/* Executa algoritmo guloso aleatório */
 void buscaGulosa()
 {
+    /* Variáveis locais */
     int contEstacoes, contPontos, contPontosEstacao, contResultado = 0;
     int RCL = calcula_RCL();
     struct timeval random;
     int r_RCL;
     
-    gettimeofday(&random,NULL);
-    r_RCL = random.tv_usec % RCL; //sorteia estacão da RCL
-        
+    /* Inicializa variável que conterá o resultado da iteracão do algoritmo guloso aleatório
+       e depois será utilizado na busca local */        
     vetorResultado.custo = 0;
     vetorResultado.vetorEstacoesResultado = (Estacao*)malloc(sizeof(Estacao)*nEstacoes);
     vetorResultado.vetorPontosCobertos = (int*)malloc(sizeof(int)*nPontos);
@@ -108,8 +110,9 @@ void buscaGulosa()
     }
     
     gettimeofday(&random,NULL);
-    r_RCL = random.tv_usec % RCL; //sorteia estacão da RCL
+    r_RCL = random.tv_usec % RCL; /* sorteia estacão da RCL, num range da RCL sorteado com os microsegundos para uma melhor randomizacão */
     
+    /* Insere o primeiro elemento na solucão */
     vetorResultado.vetorEstacoesResultado[contResultado] = vetorEstacoes[r_RCL];
     vetorResultado.custo += vetorEstacoes[r_RCL].custoEstacao;
     for(contPontosEstacao = 0; contPontosEstacao < vetorEstacoes[r_RCL].nPontosEstacao; contPontosEstacao++)
@@ -118,15 +121,19 @@ void buscaGulosa()
     }
     contResultado++;
     
+    /* Insere os demais elementos, verificando as restricões */
     for(contEstacoes = 0; contEstacoes < RCL; contEstacoes++)
     {
+        /* Verifica se os pontos cobertos pela estacão existem no vetor de pontos cobertos da solucão */ 
         for(contPontosEstacao = 0; contPontosEstacao < vetorEstacoes[contEstacoes].nPontosEstacao; contPontosEstacao++)
         {
+            /* Se algum ponto não existir na solucão, pára */
             if(vetorResultado.vetorPontosCobertos[vetorEstacoes[contEstacoes].vPontosEstacao[contPontosEstacao] - 1] == 0)
             {
                 break;
             }
         }
+        /* Se for possível, insere novo elemento na solucão */
         if(contPontosEstacao != vetorEstacoes[contEstacoes].nPontosEstacao)
         {
             vetorResultado.vetorEstacoesResultado[contResultado] = vetorEstacoes[contEstacoes];
@@ -137,17 +144,22 @@ void buscaGulosa()
             }
             contResultado++;
         }
+        /* Verifica se todos os pontos a serem cobertos foram cobertos */
         for(contPontos = 0; contPontos < nPontos; contPontos++)
         {
+            /* Caso um dos pontos ainda não tenha sido coberto, pára */
             if(vetorResultado.vetorPontosCobertos[contPontos] == 0)
             {
                 break;
             }
         }
+        /* Caso todos os pontos tenham sidos cobertos, pára */
         if(contPontos == nPontos)
         {
             break;
         }
+        /* Se o algoritmo ainda não encontrou solucão válida e não há mais elementos na RCL
+           insere um novo elemento na RCL */
         if(contPontos != nPontos && contEstacoes == RCL - 1 && RCL < nEstacoes)
         {
             RCL = RCL + 1;
@@ -156,6 +168,7 @@ void buscaGulosa()
     vetorResultado.nEstacoesResultado = contResultado;
 }
 
+/* Funcão auxiliar que remove uma estacão*/
 void removeEstacao(int i) {
 	int nextIndex = i + 1;
     int custoEstacaoRemovida = vetorResultado.vetorEstacoesResultado[i].custoEstacao;
@@ -177,6 +190,7 @@ void removeEstacao(int i) {
 	vetorResultado.nEstacoesResultado--;
 }
 
+/* Executa a busca local */
 void buscaLocal() {
 	Estacao e;
 	int i, j;
@@ -207,6 +221,8 @@ void buscaLocal() {
 	}
 }
 
+/* Compara se o resultado obtido na iteracão é melhor que o resultado global, caso isto ocorra
+   atualiza a solucão */
 void comparaResultado()
 {
     int i;
@@ -235,6 +251,7 @@ void comparaResultado()
     free(vetorResultado.vetorPontosCobertos);
 }
 
+/* Imprime o resultado */
 void imprimeResultado()
 {
     int contEstacoesResultado;
@@ -244,7 +261,6 @@ void imprimeResultado()
     for(contEstacoesResultado = 0; contEstacoesResultado < vetorResultadoFinal.nEstacoesResultado; contEstacoesResultado++)
     {
         printf("%s\n", vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao);
-        //printf("%d\n", vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nPontosEstacao);
     }
 }
 
