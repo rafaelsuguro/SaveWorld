@@ -4,11 +4,11 @@ all: linux clean
 
 mac: saveWorldMac.o clean
 saveWorldMac.o: saveWorld.c
-	gcc -o saveWorldMac.o -c quicksort.c saveWorld.c -W -Wall -pedantic
+	gcc -O2 quicksort.c saveWorld.c -o saveWorldMac
 
 linux: saveWorld.o
 saveWorld.o: saveWorld.c
-	gcc -o saveWorld.o -c quicksort.c saveWorld.c -W -Wall -pedantic
+	gcc -O2 quicksort.c saveWorld.c -o saveWorld
 
 clean:
 	rm -rf *.o
