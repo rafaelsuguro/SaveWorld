@@ -1,3 +1,7 @@
+/**************************************
+** Implementacão da heurística GRASP **
+**************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "quicksort.h"
@@ -7,38 +11,39 @@
 #include <sys/time.h>
 
 
-
+/* Estrutura que contém dados sobre o resultado parciais ou finais da heurística */
 typedef struct Resultado
 {
-    int *vetorPontosCobertos;
-    Estacao *vetorEstacoesResultado;
-    int nEstacoesResultado;
-    float custo;
+    int *vetorPontosCobertos;          /* Vetor dos pontos cobertos pelas estacões que estão na solucão */
+    Estacao *vetorEstacoesResultado;   /* Vetor que contém as estacões que estão na solucão */
+    int nEstacoesResultado;            /* Número de estacões da solucão */
+    float custo;                       /* Custo calculado até o momento das estacões */
 }Resultado;
 
-Estacao *vetorEstacoes;
-Resultado vetorResultado, vetorResultadoFinal;
-int nPontos, nEstacoes;
+Estacao *vetorEstacoes;                             /* Vetor de estacões que irá ser ordenado pelo quicksort */
+Resultado vetorResultado, vetorResultadoFinal;      /* Variáveis de resultado parcial e final, respectivamente */
+int nPontos, nEstacoes;                             /* Variáveis com o número de pontos a serem cobertos e número de estacões existentes, respectivamente */
 
 
-
+/* Executa leitura de dados do arquivo de teste */
 void leDados()
 {
+    /* Variá veis locais */
     char flag;
     int lido;
     int contEstacoes, contPontos = 0;
     
-    scanf("%c %d\n", &flag, &nPontos);
+    scanf("%c %d\n", &flag, &nPontos); /* Leitura do número de pontos a serem cobertos */ 
     fflush(stdin);
-    scanf("%c %d\n", &flag, &nEstacoes);
+    scanf("%c %d\n", &flag, &nEstacoes); /* Leitura do número de estacões disponíveis */
     fflush(stdin);
     
-    vetorEstacoes = (Estacao*)malloc(sizeof(Estacao)*nEstacoes);
+    vetorEstacoes = (Estacao*)malloc(sizeof(Estacao)*nEstacoes); /* Aloca memória para armazenar o vetor de estacões */
     
     for(contEstacoes = 0; contEstacoes < nEstacoes; contEstacoes++)
     {
-        vetorEstacoes[contEstacoes].vPontosEstacao = (int*)malloc(sizeof(int)*nPontos);
-        scanf("%s %f ", vetorEstacoes[contEstacoes].nomeEstacao, &vetorEstacoes[contEstacoes].custoEstacao);
+        vetorEstacoes[contEstacoes].vPontosEstacao = (int*)malloc(sizeof(int)*nPontos); /* Aloca memória para armazenar o vetor de pontos cobertos pela estacão */
+        scanf("%s %f ", vetorEstacoes[contEstacoes].nomeEstacao, &vetorEstacoes[contEstacoes].custoEstacao);  /* Armazena o custo da estacão */
         contPontos = 0;
         do
         {
