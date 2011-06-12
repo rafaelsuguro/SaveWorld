@@ -4,7 +4,6 @@ typedef struct Estacao
     float custoEstacao;
     int *vPontosEstacao;
     int nPontosEstacao;
-    int flag;
 }Estacao;
 
 void swap(Estacao* a, Estacao* b);

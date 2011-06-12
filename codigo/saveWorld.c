@@ -50,7 +50,6 @@ void leDados()
             contPontos++;
         } while(flag != '\n');
         vetorEstacoes[contEstacoes].nPontosEstacao = contPontos;
-        vetorEstacoes[contEstacoes].flag = 0;
     }
 }
 
@@ -113,7 +112,6 @@ void buscaGulosa()
         vetorResultado.vetorPontosCobertos[vetorEstacoes[r_RCL].vPontosEstacao[contPontosEstacao] - 1]++;
     }
     contResultado++;
-    vetorEstacoes[r_RCL].flag = 1;
     
     for(contEstacoes = 0; contEstacoes < RCL; contEstacoes++)
     {
@@ -133,7 +131,6 @@ void buscaGulosa()
                 vetorResultado.vetorPontosCobertos[vetorEstacoes[contEstacoes].vPontosEstacao[contPontosEstacao] - 1]++;
             }
             contResultado++;
-            vetorEstacoes[contEstacoes].flag = 1;
         }
         for(contPontos = 0; contPontos < nPontos; contPontos++)
         {
@@ -157,6 +154,13 @@ void buscaGulosa()
 void removeEstacao(int i) {
 	int nextIndex = i + 1;
     int custoEstacaoRemovida = vetorResultado.vetorEstacoesResultado[i].custoEstacao;
+    int j;
+    
+    
+    for(j = 0; j < vetorResultado.vetorEstacoesResultado[i].nPontosEstacao; j++)
+    {
+        vetorResultado.vetorPontosCobertos[vetorResultado.vetorEstacoesResultado[i].vPontosEstacao[j] - 1]--;
+    }
 	/* Se tiver out of bounds */
 	while (nextIndex < vetorResultado.nEstacoesResultado)
 	{
@@ -171,6 +175,7 @@ void removeEstacao(int i) {
 void buscaLocal() {
 	Estacao e;
 	int i, j;
+	int pontoASerRemovido;
 	/* Vamos procurar estacoes que tem todos os pontos com multiplicidade maior que 1
 	/  Ou seja, essa estacao esta so adicionando custo porque os pontos ja foram cobertos
 	/  Detalhe que se houverem mais de 1 estacao nessa situacao a escolha vai ser gulosa
@@ -180,7 +185,7 @@ void buscaLocal() {
 		e = vetorResultado.vetorEstacoesResultado[i];
 		for(j = 0; j < e.nPontosEstacao; j++)
 		{
-			int pontoASerRemovido = e.vPontosEstacao[j];
+			pontoASerRemovido = e.vPontosEstacao[j];
 			/* Caso algum ponto seja exclusivamente coberto por esta estacao, ela nao pode ser removida */
 			if (vetorResultado.vetorPontosCobertos[pontoASerRemovido - 1]  <= 1)
 			{
@@ -199,10 +204,30 @@ void buscaLocal() {
 
 void comparaResultado()
 {
+    int i;
+    
     if(vetorResultadoFinal.custo > vetorResultado.custo || vetorResultadoFinal.custo == -1)
     {
-        vetorResultadoFinal = vetorResultado;
+        if(vetorResultadoFinal.custo != -1)
+        {
+            free(vetorResultadoFinal.vetorEstacoesResultado);
+            free(vetorResultadoFinal.vetorPontosCobertos);
+        }
+        vetorResultadoFinal.custo = vetorResultado.custo;
+        vetorResultadoFinal.nEstacoesResultado = vetorResultado.nEstacoesResultado;
+        vetorResultadoFinal.vetorEstacoesResultado = (Estacao*)malloc(sizeof(Estacao)*(vetorResultado.nEstacoesResultado));
+        vetorResultadoFinal.vetorPontosCobertos = (int*)malloc(sizeof(int)*nPontos);
+        for(i = 0; i < vetorResultado.nEstacoesResultado; i++)
+        {
+            vetorResultadoFinal.vetorEstacoesResultado[i] = vetorResultado.vetorEstacoesResultado[i];
+        }
+        for(i = 0; i < nPontos; i++)
+        {
+            vetorResultadoFinal.vetorPontosCobertos[i] = vetorResultado.vetorPontosCobertos[i];
+        }
     }
+    free(vetorResultado.vetorEstacoesResultado);
+    free(vetorResultado.vetorPontosCobertos);
 }
 
 void imprimeResultado()
@@ -214,7 +239,7 @@ void imprimeResultado()
     for(contEstacoesResultado = 0; contEstacoesResultado < vetorResultadoFinal.nEstacoesResultado; contEstacoesResultado++)
     {
         printf("%s\n", vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao);
-        printf("%d\n", vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nPontosEstacao);
+        //printf("%d\n", vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nPontosEstacao);
     }
 }
 
@@ -236,7 +261,7 @@ int main(int argc, char *argv[])
     sigaction (SIGALRM, &sa, NULL);
     
     /* Configurando o timer expirar em 58 segundos, dando 2 segundos pro imprimeResultado funcionar */
-    timer.it_value.tv_sec = 5; /* Temporario em 5 segundos, mudar para 58 */
+    timer.it_value.tv_sec = 58; /* Temporario em 5 segundos, mudar para 58 */
     timer.it_value.tv_usec = 0;
     timer.it_interval.tv_sec = 0;
     timer.it_interval.tv_usec = 0;
@@ -247,9 +272,9 @@ int main(int argc, char *argv[])
     vetorResultadoFinal.custo = -1;
 
     freopen(argv[1], "r", stdin);
-    leDados();    
+    leDados(); 
+    quickSort(vetorEstacoes, 0, nEstacoes - 1);   
     while (1) {
-        quickSort(vetorEstacoes, 0, nEstacoes - 1);
         buscaGulosa();
         buscaLocal();
         comparaResultado();
