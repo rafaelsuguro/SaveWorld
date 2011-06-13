@@ -251,16 +251,52 @@ void comparaResultado()
     free(vetorResultado.vetorPontosCobertos);
 }
 
+/* Funcão auxiliar que ordena os nomes das estacoes resultantes */
+void bubble(int a[],int n)  
+{  
+    int i,j,t;  
+    for(i=n-2;i>=0;i--)  
+    {  
+        for(j=0;j<=i;j++)    
+        {  
+            if(a[j]>a[j+1])  
+            {  
+                t=a[j];  
+                a[j]=a[j+1];  
+                a[j+1]=t;  
+            }  
+        }   
+    }
+}
+
 /* Imprime o resultado */
 void imprimeResultado()
 {
     int contEstacoesResultado;
+    int i,j;
+    int v[vetorResultadoFinal.nEstacoesResultado];
     
     printf("Custo: %.2f\n", vetorResultadoFinal.custo);
     printf("Total: %d\n", vetorResultadoFinal.nEstacoesResultado);
     for(contEstacoesResultado = 0; contEstacoesResultado < vetorResultadoFinal.nEstacoesResultado; contEstacoesResultado++)
     {
-        printf("%s\n", vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao);
+        for(i = 0; i < 10 && vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao[i] != '\0'; i++)
+        {
+            if(vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao[i] < '0' ||
+               vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao[i] > '9')
+            {
+                for(j = 0; j < 10 && vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao[j] != '\0'; j++)
+                {
+                    vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao[j] = vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao[j + 1];
+                }
+            }
+        }
+        v[contEstacoesResultado] = atoi(vetorResultadoFinal.vetorEstacoesResultado[contEstacoesResultado].nomeEstacao);
+    }
+    bubble(v, vetorResultadoFinal.nEstacoesResultado);
+    for(contEstacoesResultado = 0; contEstacoesResultado < vetorResultadoFinal.nEstacoesResultado; contEstacoesResultado++)
+    {
+        printf("S_%d\n", v[contEstacoesResultado]);
     }
 }
 
